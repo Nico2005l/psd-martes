@@ -27,49 +27,33 @@ public class TareaController {
 
     @PostMapping
     public ResponseEntity<Tarea> crearTarea(@RequestBody Tarea nuevaTarea) {
-        nuevaTarea.setId(idGenerator.incrementAndGet());
-        nuevaTarea.setCompletada(false);
-        tareas.add(nuevaTarea);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaTarea);
+        long id = idGenerator.incrementAndGet();
+        CrearTareaCommand command = new CrearTareaCommand(nuevaTarea, tareas, id);
+        return command.execute();
     }
 
     @GetMapping
     public ResponseEntity<List<Tarea>> obtenerTodas() {
-        return ResponseEntity.ok(tareas);
+        ObtenerTodasTareasCommand command = new ObtenerTodasTareasCommand(tareas);
+        return command.execute();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Tarea> obtenerPorId(@PathVariable long id) {
-        for (Tarea t : tareas) {
-            if (t.getId() == id) {
-                return ResponseEntity.ok(t);
-            }
-        }
-        return ResponseEntity.notFound().build();
+        ObtenerTareaCommand command = new ObtenerTareaCommand(id, tareas);
+        return command.execute();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Tarea> actualizarTarea(@PathVariable long id, @RequestBody Tarea actualizada) {
-        for (Tarea t : tareas) {
-            if (t.getId() == id) {
-                t.setDescripcion(actualizada.getDescripcion());
-                t.setCompletada(actualizada.isCompletada());
-                return ResponseEntity.ok(t);
-            }
-        }
-        return ResponseEntity.notFound().build();
+        ActualizarTareaCommand command = new ActualizarTareaCommand(id, tareas, actualizada);
+        return command.execute();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarTarea(@PathVariable long id) {
-        Iterator<Tarea> it = tareas.iterator();
-        while (it.hasNext()) {
-            if (it.next().getId() == id) {
-                it.remove();
-                return ResponseEntity.noContent().build();
-            }
-        }
-        return ResponseEntity.notFound().build();
+        EliminarTareaCommand command = new EliminarTareaCommand(id, tareas);
+        return command.execute();
     }
 }
 
